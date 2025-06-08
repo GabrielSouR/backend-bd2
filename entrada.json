@@ -1,0 +1,16 @@
+{
+  "data": {
+    "from_principal": "modelo",
+    "modelo": ["codigoMo", "nome", "codigo_fipe"],
+    "marca": ["nome"],
+    "veiculo": ["preco", "tipoVeiculo"],
+    "ano": ["periodo"],
+    "conditions": {
+      "veiculo.preco": ["between", "20000", "50000"]
+    },
+    "order": {
+      "field": "modelo.nome",
+      "direction": "ASC"
+    }
+  }
+}
