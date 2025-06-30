@@ -1,16 +1,27 @@
 {
   "data": {
-    "from_principal": "modelo",
-    "modelo": ["codigoMo", "nome", "codigo_fipe"],
+    "from_principal": "veiculo",
     "marca": ["nome"],
-    "veiculo": ["preco", "tipoVeiculo"],
+    "modelo": ["codigomo", "nome"],
+    "veiculo": [
+      "codigove",
+      "combustivel",
+      "siglacombustivel",
+      "tipoveiculo",
+      "preco",
+      "mesreferencia"
+    ],
     "ano": ["periodo"],
     "conditions": {
-      "veiculo.preco": ["between", "20000", "50000"]
+      "marca.nome": ["LIKE", "%Fiat%"],
+      "veiculo.combustivel": ["LIKE", "%Gasolina%"],
+      "veiculo.tipoveiculo": ["=", "1"],
+      "veiculo.preco": ["between", "18000", "50000"],
+      "ano.periodo": [">=", "2008"]
     },
     "order": {
-      "field": "modelo.nome",
-      "direction": "ASC"
+      "field": "veiculo.preco",
+      "direction": "DESC"
     }
   }
 }
