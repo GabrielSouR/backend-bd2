@@ -3,22 +3,22 @@ import { Modelo } from "./modelo.entity";
 
 @Entity()
 export class Veiculo {
-  @PrimaryColumn()
+  @PrimaryColumn({ name: "codigove" })
   codigoVe!: number;
 
-  @ManyToOne(() => Modelo, modelo => modelo.veiculos)
-  @JoinColumn({ name: "codigoMo" })
+  @ManyToOne(() => Modelo, m => m.veiculos)
+  @JoinColumn({ name: "codigomo" })      // FK no banco
   modelo!: Modelo;
 
-  @Column()
+  @Column({ name: "codigomo" })
   codigoMo!: number;
 
-  @Column({ length: 50 })
-  combustível!: string;
+  @Column({ name: "combustivel", length: 50 })
+  combustivel!: string;
 
-  @Column()
+  @Column({ name: "tipoveiculo" })
   tipoVeiculo!: number;
 
-  @Column("decimal", { precision: 10, scale: 2 })
+  @Column({ name: "preco", type: "decimal", precision: 10, scale: 2 })
   preco!: number;
 }

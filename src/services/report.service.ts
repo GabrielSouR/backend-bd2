@@ -39,6 +39,14 @@ export class ReportService {
         this.addSelects(data);
         this.addConditions(data.conditions || {});
         this.addOrder(data.order);
+        
+        const [sql, parameters] = this.qb.getQueryAndParameters();
+
+        console.log('\n===== SQL Gerada =====');
+        console.log(sql);
+        console.log('\n===== Parâmetros =====');
+        console.log(parameters);
+        console.log('======================\n');
 
         return await this.qb.getRawMany();
     }
@@ -80,22 +88,35 @@ export class ReportService {
         }
     }
 
-    private generateJoinCondition(currentTable: string, relatedTable: string, relation: any): string {
+    private generateJoinCondition(
+        currentTable: string,
+        relatedTable: string,
+        relation: any
+        ): string {
         const currentAlias = currentTable;
         const relatedAlias = relatedTable;
 
-        // Descubro qual é a coluna que conecta a tabela atual à relacionada
-        const currentColumn = relation.joinColumns?.[0]?.databaseName;
+        // Se a tabela atual tem a FK (ManyToOne), use ela como base (modelo -> veiculo por exemplo)
+        const hasJoinColumns = relation.joinColumns?.length > 0;
 
-        // Pega a coluna da tabela relacionada usada na relação
-        // Primeiro tenta pela referência reversa, se não achar, usa a PK da relacionada
-        const relatedColumn =
-            relation.inverseRelation?.joinColumns?.[0]?.referencedColumn?.databaseName
-            ?? relation.inverseEntityMetadata.primaryColumns[0].databaseName;
+        if (hasJoinColumns) {
+            const currentColumn = relation.joinColumns[0].databaseName;
+            const relatedColumn = relation.inverseEntityMetadata.primaryColumns[0].databaseName;
 
-        // Monta a condição de join (ex: modelo.codigoMo = veiculo.codigoMo)
-        return `${currentAlias}.${currentColumn} = ${relatedAlias}.${relatedColumn}`;
+            return `${currentAlias}.${currentColumn} = ${relatedAlias}.${relatedColumn}`;
+        } else {
+            // Caso contrário, a FK está no lado inverso (OneToMany), então invertemos a lógica
+            const relatedColumn = relation.inverseRelation.joinColumns?.[0]?.databaseName;
+            const currentColumn = relation.entityMetadata.primaryColumns[0].databaseName;
+
+            if (!currentColumn || !relatedColumn) {
+            throw new Error(`Não foi possível determinar colunas para join entre ${currentTable} e ${relatedTable}`);
+            }
+
+            return `${relatedAlias}.${relatedColumn} = ${currentAlias}.${currentColumn}`;
+        }
     }
+
 
     private addSelects(data: Partial<Record<TableName, string[]>>) {
         // Itera sobre cada tabela presente no JSON
@@ -111,21 +132,27 @@ export class ReportService {
     }
 
     private addConditions(conditions: Record<string, [string, string?, string?]>) {
-        // Itera sobre cada condição recebida no formato: campo: [operador, valor1, valor2?]
         for (const [field, [operator, value1, value2]] of Object.entries(conditions)) {
-            const op = operator?.toLowerCase(); // Normaliza o operador
+            const op = operator?.toLowerCase();
 
-            // Caso o operador seja 'between' e ambos os valores estejam presentes
+            const paramName = field.replace('.', '_');
+
             if (op === 'between' && value1 && value2) {
-                this.qb.andWhere(`${field} BETWEEN :v1 AND :v2`, { v1: value1, v2: value2 });
-            }
-
-            // Caso seja qualquer outro operador (ex: '=', '>', '<', 'LIKE', etc)
-            else if (op && value1) {
-                this.qb.andWhere(`${field} ${op} :v`, { v: value1 });
+            const v1 = isNaN(Number(value1)) ? value1 : Number(value1);
+            const v2 = isNaN(Number(value2)) ? value2 : Number(value2);
+            this.qb.andWhere(`${field} BETWEEN :${paramName}_from AND :${paramName}_to`, {
+                [`${paramName}_from`]: v1,
+                [`${paramName}_to`]: v2,
+            });
+            } else if (op && value1) {
+            const v = isNaN(Number(value1)) ? value1 : Number(value1);
+            this.qb.andWhere(`${field} ${op} :${paramName}`, {
+                [paramName]: v,
+            });
             }
         }
     }
+
 
     private addOrder(order?: { field: string; direction: string }) {
         // Se nenhum campo foi enviado para ordenação, não faz nada

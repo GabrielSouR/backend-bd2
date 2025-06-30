@@ -19,9 +19,9 @@ export class ReportController {
     async exportReport(req: Request, res: Response) {
         try {
             const csv = await this.exportService.exportReportAsCSV(req.body);
-            res.header("Content-Type", "text/csv");
-            res.attachment("relatorio.csv");
-            res.send(csv);
+            res.setHeader('Content-Type', 'text/csv; charset=utf-8');
+            res.setHeader('Content-Disposition', 'attachment; filename="relatorio.csv"');
+            res.send('\uFEFF' + csv);
         } catch (error) {
             console.error("Erro ao exportar relatório:", error);
             res.status(500).json({ message: "Erro ao exportar relatório." });

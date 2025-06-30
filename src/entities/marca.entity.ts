@@ -3,12 +3,12 @@ import { Modelo } from "./modelo.entity";
 
 @Entity()
 export class Marca {
-  @PrimaryColumn()
+  @PrimaryColumn({ name: "codigoma" })
   codigoMa!: number;
 
-  @Column({ length: 100 })
+  @Column({ name: "nome", length: 100 })
   nome!: string;
 
-  @OneToMany(() => Modelo, modelo => modelo.marca)
+  @OneToMany(() => Modelo, m => m.marca)
   modelos!: Modelo[];
 }

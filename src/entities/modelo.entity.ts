@@ -5,25 +5,22 @@ import { Ano } from "./ano.entity";
 
 @Entity()
 export class Modelo {
-  @PrimaryColumn()
+  @PrimaryColumn({ name: "codigomo" })
   codigoMo!: number;
 
-  @ManyToOne(() => Marca, marca => marca.modelos)
-  @JoinColumn({ name: "modeloMa" })
+  @ManyToOne(() => Marca, m => m.modelos)
+  @JoinColumn({ name: "modeloma" })
   marca!: Marca;
 
-  @Column()
+  @Column({ name: "modeloma" })
   modeloMa!: number;
 
-  @Column({ length: 150 })
+  @Column({ name: "nome", length: 150 })
   nome!: string;
 
-  @Column({ length: 20 })
-  codigo_fipe!: string;
-
-  @OneToMany(() => Veiculo, veiculo => veiculo.modelo)
+  @OneToMany(() => Veiculo, v => v.modelo)
   veiculos!: Veiculo[];
 
-  @OneToMany(() => Ano, ano => ano.modelo)
+  @OneToMany(() => Ano, a => a.modelo)
   anos!: Ano[];
 }

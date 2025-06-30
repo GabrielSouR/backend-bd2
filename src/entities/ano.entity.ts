@@ -3,16 +3,16 @@ import { Modelo } from "./modelo.entity";
 
 @Entity()
 export class Ano {
-  @PrimaryColumn()
+  @PrimaryColumn({ name: "codigoan" })
   codigoAn!: number;
 
-  @PrimaryColumn()
+  @PrimaryColumn({ name: "codigomo" })
   codigoMo!: number;
 
-  @PrimaryColumn()
+  @PrimaryColumn({ name: "periodo" })
   periodo!: number;
 
-  @ManyToOne(() => Modelo, modelo => modelo.anos)
-  @JoinColumn({ name: "codigoMo" })
+  @ManyToOne(() => Modelo, m => m.anos)
+  @JoinColumn({ name: "codigomo" })
   modelo!: Modelo;
 }
